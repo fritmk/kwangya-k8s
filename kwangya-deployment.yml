@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kwangya-deployment
+spec:
+  selector:
+    matchLabels:
+      app: kwangya-service-app
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: kwangya-service-app
+    spec:
+      containers:
+        - name: kwangya-service
+          image: kwangya-service:1.0
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8090
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1000Mi
+          env:
+            - name: AESPA-SERVICE-URL
+              valueFrom:
+                configMapKeyRef:
+                  name: kwangya-configmap
+                  key: aespa-service-url
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kwangya-service
+spec:
+  type: NodePort
+  selector:
+    app: kwangya-service-app
+  ports:
+    - protocol: TCP
+      port: 8090
+      targetPort: 8090
+      nodePort: 30000
